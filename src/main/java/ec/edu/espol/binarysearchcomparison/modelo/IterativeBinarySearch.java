@@ -5,7 +5,7 @@ package ec.edu.espol.binarysearchcomparison.modelo;
  * Este algoritmo busca un elemento en una lista ordenada y retorna el índice
  * del elemento si es encontrado, o -1 si no lo es.
  * 
- * @author
+ * @author Group #13
  */
 public class IterativeBinarySearch implements ISearchAlgorithm {
 
