@@ -5,18 +5,19 @@ package ec.edu.espol.binarysearchcomparison.modelo;
  * Este algoritmo busca un elemento en una lista desordenada o ordenada y 
  * retorna el índice del elemento si es encontrado, o -1 si no lo es.
  * 
- * @author Group #13
+ * @author
  */
-public class LinearSearch {
-    
+public class LinearSearch implements ISearchAlgorithm {
+
     /**
-     * Método estático que realiza la búsqueda lineal en un arreglo.
+     * Método que realiza la búsqueda lineal en un arreglo.
      * 
      * @param array El arreglo en el cual se busca el elemento.
      * @param target El elemento que se desea buscar.
      * @return El índice del elemento si se encuentra en el arreglo, de lo contrario -1.
      */
-    public static int linearSearch(int[] array, int target) {
+    @Override
+    public int search(int[] array, int target) {
         for (int i = 0; i < array.length; i++) {
             if (array[i] == target) {
                 return i; // Retorna el índice si el elemento es encontrado
