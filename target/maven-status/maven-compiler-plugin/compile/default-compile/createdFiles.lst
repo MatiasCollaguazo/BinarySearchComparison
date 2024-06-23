@@ -1,0 +1,8 @@
+ec\edu\espol\binarysearchcomparison\modelo\RecursiveBinarySearch.class
+ec\edu\espol\binarysearchcomparison\modelo\ISearchAlgorithm.class
+ec\edu\espol\binarysearchcomparison\PrimaryController.class
+ec\edu\espol\binarysearchcomparison\modelo\IterativeBinarySearch.class
+module-info.class
+ec\edu\espol\binarysearchcomparison\App.class
+ec\edu\espol\binarysearchcomparison\modelo\AlgorithmTimeManager.class
+ec\edu\espol\binarysearchcomparison\modelo\LinearSearch.class
