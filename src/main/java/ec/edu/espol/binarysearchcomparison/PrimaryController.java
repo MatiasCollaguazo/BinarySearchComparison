@@ -23,6 +23,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.text.Text;
 import javafx.stage.Window;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 
 public class PrimaryController implements Initializable{
 
@@ -45,21 +46,29 @@ public class PrimaryController implements Initializable{
     public void initialize(URL location, ResourceBundle resources) {
         // Inicializa el valor del slider, por ejemplo, en 10 elementos.
         selectElementsSlider.setValue(10);
+        selectElementsSlider.setMin(10.0);
+        selectElementsSlider.setMax(3000000.0);
         selectElementsSlider.setMajorTickUnit(100000);  // Mostrar tick cada 100000 unidades
         selectElementsSlider.setMinorTickCount(0);       // No mostrar ticks menores
         selectElementsSlider.setShowTickLabels(true);    // Mostrar etiquetas
         selectElementsSlider.setShowTickMarks(true);     // Mostrar marcas
-        Task task = new Task() {
+        selectElementsSlider.setLabelFormatter(new StringConverter<Double>() {
             @Override
-            protected Object call() throws Exception {
-                selectElementsSlider.addEventHandler(EventType.ROOT, (event) -> {
-                    txtNElements.setText(String.valueOf((int) Math.floor(selectElementsSlider.getValue())));
-                });
-                return null;
+            public String toString(Double n) {
+                if (n == 1000000) return "1E6";  // Representación en notación científica
+                if (n >= 100000) return String.format("%.0E", n);
+                return n.intValue() + "";
             }
-        };
-        Thread t = new Thread(task);
-        t.start();
+
+            @Override
+            public Double fromString(String s) {
+                return Double.valueOf(s);
+            }
+        });
+
+        selectElementsSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            txtNElements.setText(String.valueOf(newVal.intValue()));
+        });
     }
 
     @FXML
@@ -105,6 +114,7 @@ public class PrimaryController implements Initializable{
             // Medir el tiempo de búsqueda usando Binary Search Recursivo.
             long binaryRecursiveTime = AlgorithmTimeManager.measureTime(binarySearchRecursive, array, target);
             txtBusquedaBinRecursiva.setText(String.format("%.5f ms", AlgorithmTimeManager.toMilliseconds(binaryRecursiveTime)));
+            changeColors(linearTime, binaryIterativeTime, binaryRecursiveTime);
         } catch (NumberFormatException e) {
              showTooltip(elementToSearch, "Por favor, ingrese un valor numérico válido.");
         }
@@ -126,5 +136,35 @@ public class PrimaryController implements Initializable{
 
         // Mantener el focus en el TextField
         textField.requestFocus();
+    }
+    
+    private void changeColors(long linearTime, long binaryIterativeTime, long binaryRecursiveTime) {
+        long maxTime = Math.max(Math.max(linearTime, binaryIterativeTime), binaryRecursiveTime);
+        long minTime = Math.min(Math.min(linearTime, binaryIterativeTime), binaryRecursiveTime);
+
+        // Cambia el color del tiempo más alto a rojo
+        if (linearTime == maxTime) {
+            txtBusquedaLineal.setStyle("-fx-fill: red;");
+        } else if (linearTime == minTime) {
+            txtBusquedaLineal.setStyle("-fx-fill: green;");
+        } else {
+            txtBusquedaLineal.setStyle("-fx-fill: #FFB200;");
+        }
+
+        if (binaryIterativeTime == maxTime) {
+            txtBusquedaBinIterada.setStyle("-fx-fill: red;");
+        } else if (binaryIterativeTime == minTime) {
+            txtBusquedaBinIterada.setStyle("-fx-fill: green;");
+        } else {
+            txtBusquedaBinIterada.setStyle("-fx-fill: #FFB200;");
+        }
+
+        if (binaryRecursiveTime == maxTime) {
+            txtBusquedaBinRecursiva.setStyle("-fx-fill: red;");
+        } else if (binaryRecursiveTime == minTime) {
+            txtBusquedaBinRecursiva.setStyle("-fx-fill: green;");
+        } else {
+            txtBusquedaBinRecursiva.setStyle("-fx-fill: #FFB200;");
+        }
     }
 }

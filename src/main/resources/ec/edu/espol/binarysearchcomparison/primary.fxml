@@ -42,7 +42,7 @@
                   <Font size="16.0" />
                </font>
             </Text>
-            <Slider fx:id="selectElementsSlider" blockIncrement="1.0" max="1000000.0" min="10.0" showTickLabels="true" value="10.0" />
+            <Slider fx:id="selectElementsSlider" blockIncrement="1.0" max="1000.0" min="10.0" showTickLabels="true" value="10.0" />
          </children>
          <opaqueInsets>
             <Insets />
