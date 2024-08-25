@@ -14,10 +14,11 @@ import java.io.IOException;
 public class App extends Application {
 
     private static Scene scene;
-
+    public static int PREDET_WIDTH =653;
+    public static int PREDET_HEIGHT=435;
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 640, 480);
+        scene = new Scene(loadFXML("primary"), PREDET_WIDTH, PREDET_HEIGHT);
         stage.setScene(scene);
         stage.show();
     }

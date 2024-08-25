@@ -7,20 +7,22 @@ import ec.edu.espol.binarysearchcomparison.modelo.LinearAlgorithm;
 import ec.edu.espol.binarysearchcomparison.util.AlgorithmTimeManager;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
@@ -41,9 +43,48 @@ public class PrimaryController implements Initializable{
     private Button btnBuscar;
     @FXML
     private Text txtNElements;
+    @FXML
+    private Pane paneBusqueda;
+    @FXML
+    private Pane paneGrafica;
+    @FXML
+    private CheckBox checkBoxGraph;
+    @FXML
+    private LineChart<Number, Number> lineChartGraph;
 
+    private XYChart.Series<Number, Number> seriesLinearSearch;
+    private XYChart.Series<Number, Number> seriesBinarySearchIterative;
+    private XYChart.Series<Number, Number> seriesBinarySearchRecursive;
+    private Thread updateGraphThread;
+    private volatile boolean updating = false;
+    @FXML
+    private ToggleButton tglButtonInitGraph;
+    @FXML
+    private NumberAxis yAxis;
+    @FXML
+    private NumberAxis xAxis;
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        paneBusqueda.setVisible(true);
+        paneBusqueda.setManaged(true);
+        paneGrafica.setVisible(false);
+        paneGrafica.setManaged(false);
+        // Inicializa las series de datos
+        seriesLinearSearch = new XYChart.Series<>();
+        seriesLinearSearch.setName("Búsqueda Lineal");
+        
+
+        // Habilitar los puntos en las series
+        lineChartGraph.setCreateSymbols(true);
+        seriesBinarySearchIterative = new XYChart.Series<>();
+        seriesBinarySearchIterative.setName("Búsqueda Binaria Iterada");
+
+        seriesBinarySearchRecursive = new XYChart.Series<>();
+        seriesBinarySearchRecursive.setName("Búsqueda Binaria Recursiva");
+
+        // Añadir las series al gráfico
+        lineChartGraph.getData().addAll(seriesLinearSearch, seriesBinarySearchIterative, seriesBinarySearchRecursive);
+        yAxis.setAutoRanging(true); // Activa el ajuste automático
         // Inicializa el valor del slider, por ejemplo, en 10 elementos.
         selectElementsSlider.setValue(10);
         selectElementsSlider.setMin(10.0);
@@ -68,9 +109,12 @@ public class PrimaryController implements Initializable{
 
         selectElementsSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             txtNElements.setText(String.valueOf(newVal.intValue()));
+            adjustYAxisRange(newVal.intValue());  // Ajustar el rango del eje Y
         });
     }
 
+    
+    
     @FXML
     private void search(ActionEvent event) {
         try{
@@ -115,6 +159,9 @@ public class PrimaryController implements Initializable{
             long binaryRecursiveTime = AlgorithmTimeManager.measureTime(binarySearchRecursive, array, target);
             txtBusquedaBinRecursiva.setText(String.format("%.5f ms", AlgorithmTimeManager.toMilliseconds(binaryRecursiveTime)));
             changeColors(linearTime, binaryIterativeTime, binaryRecursiveTime);
+            
+            long maxTime = Math.max(Math.max(linearTime, binaryIterativeTime), binaryRecursiveTime);
+            adjustXAxisRange((long) AlgorithmTimeManager.toMilliseconds(maxTime));
         } catch (NumberFormatException e) {
              showTooltip(elementToSearch, "Por favor, ingrese un valor numérico válido.");
         }
@@ -136,6 +183,24 @@ public class PrimaryController implements Initializable{
 
         // Mantener el focus en el TextField
         textField.requestFocus();
+    }
+    
+    private void adjustYAxisRange(int maxTime) {
+        yAxis.setAutoRanging(true);  // Desactiva el auto-rango para personalizar los límites
+        yAxis.setLowerBound(0);       // Establece el límite inferior en 0
+        yAxis.setUpperBound(2);  // Establece el límite superior en el valor del slider
+        yAxis.setTickUnit(maxTime / 5.0);  // Ajusta la separación entre las marcas
+    }
+    
+    private void adjustXAxisRange(long maxIterations) {
+        xAxis.setAutoRanging(false);  // Desactiva el ajuste automático
+        if (maxIterations>=34) {
+            xAxis.setLowerBound(maxIterations-34);
+        }else{
+            xAxis.setLowerBound(0);       // Establece el límite inferior en 0 ms
+        }
+        xAxis.setUpperBound(maxIterations);  // El límite superior es un 10% mayor que el tiempo máximo observado
+        xAxis.setTickUnit(50);    // Incrementa el divisor para reducir la separación
     }
     
     private void changeColors(long linearTime, long binaryIterativeTime, long binaryRecursiveTime) {
@@ -167,4 +232,106 @@ public class PrimaryController implements Initializable{
             txtBusquedaBinRecursiva.setStyle("-fx-fill: #FFB200;");
         }
     }
+
+    @FXML
+    private void turnGraphic(ActionEvent event) {
+        CheckBox checkBoxGraph = (CheckBox) event.getTarget();
+        if (checkBoxGraph.isSelected()){
+            showGraphic();
+        }else{
+            hideGraphic();
+        }
+    }
+    
+    private void showGraphic(){
+        double newWidth = (double) App.PREDET_WIDTH+paneGrafica.getPrefWidth();
+        redimensionateWindow(newWidth, App.PREDET_HEIGHT);
+        paneGrafica.setVisible(true);
+        paneGrafica.setManaged(true);
+        seriesLinearSearch.getNode().lookup(".chart-series-line").setStyle("-fx-stroke-width: 2px;");
+        seriesBinarySearchIterative.getNode().lookup(".chart-series-line").setStyle("-fx-stroke-width: 2px;");
+        seriesBinarySearchRecursive.getNode().lookup(".chart-series-line").setStyle("-fx-stroke-width: 2px;");
+    }
+
+    private void hideGraphic() {
+        redimensionateWindow(App.PREDET_WIDTH, App.PREDET_HEIGHT);
+        paneGrafica.setVisible(false);
+        paneGrafica.setManaged(false);
+    }
+    
+    private void redimensionateWindow(double newWidth, double newHeight){
+        Stage primaryWindow = (Stage) paneBusqueda.getScene().getWindow();
+        primaryWindow.setWidth(newWidth);
+        primaryWindow.setHeight(newHeight);
+    }
+
+    @FXML
+    private void initGraph(ActionEvent event) {
+        ToggleButton toggleButton = (ToggleButton) event.getTarget();
+        
+        if (toggleButton.isSelected()) {
+            toggleButton.setText("Detener Actualización");
+            startUpdateThread();
+        }else{
+            stopUpdateThread();
+            toggleButton.setText("Iniciar Actualización");
+        }
+    }
+
+
+    private void startUpdateThread() {
+        updating = true;
+        final int[] iterationCount = {1}; // Contador de iteraciones
+        final int numberOfPointsPerAlg = 35;
+        updateGraphThread = new Thread(() -> {
+            while (updating) {
+                try {
+                    javafx.application.Platform.runLater(() -> {
+                        int arraySize = (int) selectElementsSlider.getValue();
+                        AlgorithmCreateArray arrayGenerator = new AlgorithmCreateArray();
+                        int[] array = arrayGenerator.generateSequentialArray(arraySize);
+                        int target = (int) (Math.random() * arraySize);
+
+                        LinearAlgorithm linearSearch = new LinearAlgorithm();
+                        BinarySearchAlgorithmIterative binarySearchIterative = new BinarySearchAlgorithmIterative();
+                        BinarySearchAlgorithmRecursive binarySearchRecursive = new BinarySearchAlgorithmRecursive();
+
+                        long linearTime = AlgorithmTimeManager.measureTime(linearSearch, array, target);
+                        long binaryIterativeTime = AlgorithmTimeManager.measureTime(binarySearchIterative, array, target);
+                        long binaryRecursiveTime = AlgorithmTimeManager.measureTime(binarySearchRecursive, array, target);
+
+                        // Añadir nuevos puntos de datos a las series usando la iteración como eje X
+                        seriesLinearSearch.getData().add(new XYChart.Data<>(iterationCount[0], AlgorithmTimeManager.toMilliseconds(linearTime)));
+                        seriesBinarySearchIterative.getData().add(new XYChart.Data<>(iterationCount[0], AlgorithmTimeManager.toMilliseconds(binaryIterativeTime)));
+                        seriesBinarySearchRecursive.getData().add(new XYChart.Data<>(iterationCount[0], AlgorithmTimeManager.toMilliseconds(binaryRecursiveTime)));
+
+                        // Incrementar el contador de iteraciones
+                        iterationCount[0]++;
+
+                        // Limitar la cantidad de datos en la gráfica
+                        if (seriesLinearSearch.getData().size()+2 > numberOfPointsPerAlg) seriesLinearSearch.getData().remove(0);
+                        if (seriesBinarySearchIterative.getData().size()+2 > numberOfPointsPerAlg) seriesBinarySearchIterative.getData().remove(0);
+                        if (seriesBinarySearchRecursive.getData().size()+2 > numberOfPointsPerAlg) seriesBinarySearchRecursive.getData().remove(0);
+
+                        adjustXAxisRange(iterationCount[0]);
+                    });
+
+                    Thread.sleep(500); // Intervalo de actualización cada 0.1 segundos
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
+        updateGraphThread.setDaemon(true);
+        updateGraphThread.start();
+    }
+
+    private void stopUpdateThread() {
+        updating = false;
+        if (updateGraphThread != null && updateGraphThread.isAlive()) {
+            updateGraphThread.interrupt(); // Detener el hilo de forma segura
+        }
+        updateGraphThread = null;
+    }
+
 }
