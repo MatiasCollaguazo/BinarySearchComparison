@@ -262,7 +262,7 @@ public class PrimaryController implements Initializable{
     private void redimensionateWindow(double newWidth, double newHeight){
         Stage primaryWindow = (Stage) paneBusqueda.getScene().getWindow();
         primaryWindow.setWidth(newWidth);
-        primaryWindow.setHeight(newHeight);
+        primaryWindow.setHeight(newHeight+39);
     }
 
     @FXML
