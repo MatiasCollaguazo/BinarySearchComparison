@@ -12,7 +12,7 @@ public class BinarySearchAlgorithmIterative implements SearchAlgorithm {
         int right = array.length - 1;
         
         while (left <= right) {
-            int mid = left + (right - left) / 2;
+            int mid = (right + left) / 2;
             
             // Comprueba y retorna el elemento en la mitad del array si es igual al target
             if (array[mid] == target) {
