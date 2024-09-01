@@ -1,6 +1,4 @@
-package ec.edu.espol.binarysearchcomparison.util;
-
-import ec.edu.espol.binarysearchcomparison.modelo.SearchAlgorithm;
+package ec.edu.espol.binarysearchcomparison.modelo;
 
 /**
  * Clase para gestionar el tiempo de ejecución de diferentes algoritmos de búsqueda.

@@ -4,7 +4,7 @@ import ec.edu.espol.binarysearchcomparison.modelo.AlgorithmCreateArray;
 import ec.edu.espol.binarysearchcomparison.modelo.BinarySearchAlgorithmIterative;
 import ec.edu.espol.binarysearchcomparison.modelo.BinarySearchAlgorithmRecursive;
 import ec.edu.espol.binarysearchcomparison.modelo.LinearAlgorithm;
-import ec.edu.espol.binarysearchcomparison.util.AlgorithmTimeManager;
+import ec.edu.espol.binarysearchcomparison.modelo.AlgorithmTimeManager;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
