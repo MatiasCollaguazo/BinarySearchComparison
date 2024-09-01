@@ -22,7 +22,7 @@ public class BinarySearchAlgorithmRecursive implements SearchAlgorithm {
      */
     private int binarySearchRecursive(int[] array, int target, int left, int right) {
         if (left <= right) {
-            int mid = left + (right - left) / 2;
+            int mid = (right + left) / 2;
 
             // Check if the target is at the mid index
             if (array[mid] == target) {
