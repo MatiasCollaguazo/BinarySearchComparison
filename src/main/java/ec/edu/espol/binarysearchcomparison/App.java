@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import javafx.scene.image.Image;
 
 /**
  * JavaFX App
@@ -19,6 +20,8 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         scene = new Scene(loadFXML("primary"), PREDET_WIDTH, PREDET_HEIGHT);
+        stage.setTitle("Comparación de algoritmos de búsqueda");
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/ec/edu/espol/binarysearchcomparison/icon.png")));
         stage.setScene(scene);
         stage.show();
     }
