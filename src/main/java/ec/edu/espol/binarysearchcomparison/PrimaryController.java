@@ -316,7 +316,7 @@ public class PrimaryController implements Initializable{
                         adjustXAxisRange(iterationCount[0]);
                     });
 
-                    Thread.sleep(500); // Intervalo de actualización cada 0.1 segundos
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
